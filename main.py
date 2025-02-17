@@ -3,6 +3,8 @@ from init import db, ma
 import os
 from blueprints.db_bp import db_bp
 from blueprints.students_bp import students_bp
+from blueprints.teachers_bp import teachers_bp
+from blueprints.courses_bp import courses_bp
 
 def create_app():
     app = Flask(__name__)
@@ -14,6 +16,8 @@ def create_app():
 
     app.register_blueprint(db_bp)
     app.register_blueprint(students_bp)
+    app.register_blueprint(teachers_bp)
+    app.register_blueprint(courses_bp)
 
     return app
 
