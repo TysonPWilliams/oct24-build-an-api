@@ -9,8 +9,6 @@ class Teacher(db.Model):
     department = db.Column(db.String(50), nullable=False)
     address = db.Column(db.String(250))
 
-    courses = db.relationship('Course', back_populates='teacher')
-
 class TeacherSchema(ma.Schema):
     class Meta:
         fields = ('id', 'name', 'department', 'address')

@@ -1,4 +1,6 @@
 from flask import Blueprint, request
+from sqlalchemy.exc import IntegrityError
+from psycopg2 import errorcodes
 from init import db
 from models.student import Student, many_students, one_student, StudentSchema
 
@@ -24,21 +26,32 @@ def get_one_student(student_id):
 # Create - POST /students
 @students_bp.route('/students', methods=['POST'])
 def create_student():
-    # Parse the incoming JSON body
-    data = StudentSchema(exclude=['id']).load(request.json) #Tried to use one_student as defined in student.py, had to import StudentSchema and then run
+    try:
+        # Parse the incoming JSON body
+        data = StudentSchema(exclude=['id']).load(request.json) #Tried to use one_student as defined in student.py, had to import StudentSchema and then run
 
-    # Create a new instance
-    new_student = Student(
-        name = data['name'],
-        email = data['email'],
-        address = data.get('address')
-    )
-    # Add to the DB session
-    db.session.add(new_student)
-    # Commit to the DB
-    db.session.commit()
-    # Return the new product
-    return one_student.dump(new_student), 201
+        # Create a new instance
+        new_student = Student(
+            name = data['name'],
+            email = data.get('email'),
+            address = data.get('address')
+        )
+        # Add to the DB session
+        db.session.add(new_student)
+        # Commit to the DB
+        db.session.commit()
+        # Return the new product
+        return one_student.dump(new_student), 201
+    
+    except IntegrityError as err:
+        if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION: #unique violation
+            return {"error": "Email address already in use"}, 409
+        elif err.orig.pgcode == errorcodes.NOT_NULL_VIOLATION:
+            return {"error": "Field is required"}, 400
+        else:
+            return {"error": err}, 400
+    
+    
 
 # Update - PUT /students/<int:id>
 @students_bp.route('/students/<int:student_id>', methods=['PUT'])

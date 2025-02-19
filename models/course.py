@@ -9,7 +9,7 @@ class Course(db.Model):
     duration = db.Column(db.String(200), nullable=False)
     teacher_id = db.Column(db.Integer, db.ForeignKey("teachers.id", ondelete='cascade'), nullable=False)
 
-    teacher = db.relationship('Teacher', back_populates='courses')
+    enrolments = db.relationship('Enrolment', back_populates='course')
 
 class CourseSchema(ma.Schema):
     class Meta:

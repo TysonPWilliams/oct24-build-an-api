@@ -9,6 +9,8 @@ class Student(db.Model):
     email = db.Column(db.String(200), nullable=False, unique=True)
     address = db.Column(db.String(250))
 
+    enrolments = db.relationship('Enrolment', back_populates='student')
+
 class StudentSchema(ma.Schema):
     class Meta:
         fields = ('id', 'name', 'email', 'address')

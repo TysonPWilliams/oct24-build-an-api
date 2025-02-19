@@ -3,6 +3,7 @@ from init import db
 from models.student import Student
 from models.teacher import Teacher
 from models.course import Course
+from models.enrolment import Enrolment
 
 db_bp = Blueprint('db', __name__)
 
@@ -14,17 +15,6 @@ def create_tables():
 
 @db_bp.cli.command('seed')
 def seed_tables():
-    students = [
-        Student(
-            name ='Mary Jones',
-            email='mary.jones@gmail.com',
-            address='Sydney'
-        ),
-        Student(
-            name='John Smith',
-            email='john.smith@gmail.com'
-        )
-    ]
     teachers = [
         Teacher(
             name = 'Stephen Hawking',
@@ -37,6 +27,25 @@ def seed_tables():
             address = 'London'
         )
     ]
+
+    db.session.add_all(teachers)
+    db.session.commit()
+
+    students = [
+        Student(
+            name ='Mary Jones',
+            email='mary.jones@gmail.com',
+            address='Sydney'
+        ),
+        Student(
+            name='John Smith',
+            email='john.smith@gmail.com'
+        )
+    ]
+
+    db.session.add_all(students)
+    db.session.commit()
+
     courses = [
         Course(
             name = "Diploma of Web Development",
@@ -48,10 +57,26 @@ def seed_tables():
             duration = "36 Months",
             teacher_id = 2
         )
+        
     ]
-
-    db.session.add_all(students)
-    db.session.add_all(teachers)
+    
     db.session.add_all(courses)
     db.session.commit()
+
+    enrolments = [
+        Enrolment(
+            student_id=1,
+            course_id=1,
+            date_enrolment="2025-01-15"
+        ),
+        Enrolment(
+            student_id=2,
+            course_id=1,
+            date_enrolment="2025-10-24"
+        )
+    ]
+    
+    db.session.add_all(enrolments)
+    db.session.commit()
     print('Tables seeded')
+
