@@ -1,13 +1,16 @@
 from flask import Blueprint, request
+from sqlalchemy.exc import IntegrityError
+from psycopg2 import errorcodes
 from init import db
 from models.teacher import Teacher, many_teachers, one_teacher, TeacherSchema, teacher_without_id
+import re
 
 teachers_bp = Blueprint('teachers', __name__)
 
 # Read all - GET /teachers
 @teachers_bp.route('/teachers')
 def get_all_teachers():
-    stmt = db.select(Teacher)
+    stmt = db.select(Teacher).order_by(Teacher.name)
     teachers = db.session.scalars(stmt)
     return many_teachers.dump(teachers)
 
@@ -24,53 +27,77 @@ def get_one_teacher(teacher_id):
 # Create - POST /teachers
 @teachers_bp.route('/teachers', methods=['POST'])
 def create_teacher():
-    # Parse the incoming JSON body
-    data = teacher_without_id.load(request.json) 
+    try:
+        # Parse the incoming JSON body
+        data = teacher_without_id.load(request.json) #Tried to use one_teacher as defined in teacher.py, had to import TeacherSchema and then run
 
-    # Create a new instance
-    new_teacher = Teacher(
-        name = data['name'],
-        department = data['department'],
-        address = data.get('address')
-    )
-    # Add to the DB session
-    db.session.add(new_teacher)
-    # Commit to the DB
-    db.session.commit()
-    # Return the new product
-    return one_teacher.dump(new_teacher), 201
-
+        # Create a new instance
+        new_teacher = Teacher(
+            name = data.get('name'),
+            department = data.get('department'),
+            address = data.get('address')
+        )
+        # Add to the DB session
+        db.session.add(new_teacher)
+        # Commit to the DB
+        db.session.commit()
+        # Return the new product
+        return one_teacher.dump(new_teacher), 201
+    
+    except IntegrityError as err:
+        if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION: #unique violation
+            return {"error": "Email address already in use"}, 409
+        # elif err.orig.pgcode == errorcodes.NOT_NULL_VIOLATION:
+        #     # return {"error": "Field is required"}, 400
+        #     db.session.rollback()  # Rollback the transaction to prevent corruption
+        #     error_message = str(err.orig)  # Extract the original error message
+        #     return {f"Integrity Error": f"{error_message}"}
+        else:
+            # return {"error": err._message.orig.diag.message_detail}, 400
+            db.session.rollback()  # Rollback the transaction to prevent corruption
+            error_message = str(err.orig)  # Extract the original error message
+            return {f"Error": f"{error_message}"}
+    
 # Update - PUT /teachers/<int:id>
-@teachers_bp.route('/teachers/<int:teacher_id>', methods=['PUT'])
+@teachers_bp.route('/teachers/<int:teacher_id>', methods=['PUT', 'PATCH'])
 def update_teacher(teacher_id):
-    # Load and parse the incoming JSON body
-    data = teacher_without_id.load(request.json)
-    # Get the requested teacher from the db
-    stmt = db.select(Teacher).filter_by(id=teacher_id)
-    teacher = db.session.scalar(stmt)
+    try:
+        # Get the requested teacher from the db
+        stmt = db.select(Teacher).filter_by(id=teacher_id)
+        teacher = db.session.scalar(stmt)
 
-    if teacher:
-        teacher.name = data['name'],
-        teacher.department = data['department'],
-        teacher.address = data.get('address')
-        # Commit changes
-        db.session.commit()  
-        # Return the updated teacher
-        return one_teacher().dump(teacher), 200
-    else:
-        return {"error": f"Teacher with id {teacher_id} not found"}, 404  
+        if teacher:
+            # Load and parse the incoming JSON body
+            data = teacher_without_id.load(request.json)
+            # Update the attributes of the teacher with the incoming data using "short circuit boolean"
+            teacher.name = data.get('name') or teacher.name
+            teacher.department = data.get('department') or teacher.department
+            teacher.address = data.get('address', teacher.address)
+
+         # Commit changes
+            db.session.commit()  
+            # Return the updated teacher
+            return one_teacher.dump(teacher), 200
+        else:
+            return {"error": f"Teacher with id {teacher_id} not found"}, 404  
+    except IntegrityError as err:
+        if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION:
+            return {"error": "Email address already in use"}, 409 # Conflict
 
 # Delete - DELETE /teachers/<int:id>
 @teachers_bp.route('/teachers/<int:teacher_id>', methods=['DELETE'])
 def delete_teacher(teacher_id):
-    # Create a statement and filter for teacher id
     stmt = db.select(Teacher).filter_by(id=teacher_id)
-    # Create a teacher instance and scalar the statement
     teacher = db.session.scalar(stmt)
-    # If teacher exists, delete the teacher and return nothing
     if teacher:
         db.session.delete(teacher)
         db.session.commit()
         return {}, 204
     else:
-        return {"error" : f"Teacher with id {teacher_id} not found"}, 404
+        return {"error": f"Teacher with id {teacher_id} not found"}, 404
+
+
+
+# Possible extra routes:
+# Enrol - POST /teachers/<int:teacher_id>/<int:course_id>
+# Unenrol - DELETE /teachers/<int:teacher_id>/<int:course_id>
