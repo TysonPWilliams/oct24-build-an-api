@@ -1,6 +1,6 @@
 from flask import Blueprint, request
 from init import db
-from models.teacher import Teacher, many_teachers, one_teacher, TeacherSchema
+from models.teacher import Teacher, many_teachers, one_teacher, TeacherSchema, teacher_without_id
 
 teachers_bp = Blueprint('teachers', __name__)
 
@@ -25,7 +25,7 @@ def get_one_teacher(teacher_id):
 @teachers_bp.route('/teachers', methods=['POST'])
 def create_teacher():
     # Parse the incoming JSON body
-    data = TeacherSchema(exclude=['id']).load(request.json) 
+    data = teacher_without_id.load(request.json) 
 
     # Create a new instance
     new_teacher = Teacher(
@@ -44,7 +44,7 @@ def create_teacher():
 @teachers_bp.route('/teachers/<int:teacher_id>', methods=['PUT'])
 def update_teacher(teacher_id):
     # Load and parse the incoming JSON body
-    data = TeacherSchema(exclude=['id']).load(request.json)
+    data = teacher_without_id.load(request.json)
     # Get the requested teacher from the db
     stmt = db.select(Teacher).filter_by(id=teacher_id)
     teacher = db.session.scalar(stmt)
@@ -56,7 +56,7 @@ def update_teacher(teacher_id):
         # Commit changes
         db.session.commit()  
         # Return the updated teacher
-        return TeacherSchema().dump(teacher), 200
+        return one_teacher().dump(teacher), 200
     else:
         return {"error": f"Teacher with id {teacher_id} not found"}, 404  
 

@@ -58,8 +58,6 @@ def create_student():
             error_message = str(err.orig)  # Extract the original error message
             return {f"Error": f"{error_message}"}
     
-    
-
 # Update - PUT /students/<int:id>
 @students_bp.route('/students/<int:student_id>', methods=['PUT', 'PATCH'])
 def update_student(student_id):
@@ -97,6 +95,9 @@ def delete_student(student_id):
         return {}, 204
     else:
         return {"error": f"Student with id {student_id} not found"}, 404
+
+
+
 # Possible extra routes:
 # Enrol - POST /students/<int:student_id>/<int:course_id>
 # Unenrol - DELETE /students/<int:student_id>/<int:course_id>

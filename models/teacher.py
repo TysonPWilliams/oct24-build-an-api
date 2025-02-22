@@ -16,3 +16,4 @@ class TeacherSchema(ma.Schema):
 
 one_teacher = TeacherSchema()
 many_teachers = TeacherSchema(many=True)
+teacher_without_id = TeacherSchema(exclude=['id'])
