@@ -25,3 +25,4 @@ class EnrolmentSchema(ma.Schema):
 
 one_enrolment = EnrolmentSchema()
 many_enrolments = EnrolmentSchema(many=True)
+enrolment_without_id = EnrolmentSchema(exclude=['id'])

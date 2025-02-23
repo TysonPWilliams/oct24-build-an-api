@@ -3,7 +3,6 @@ from sqlalchemy.exc import IntegrityError
 from psycopg2 import errorcodes
 from init import db
 from models.student import Student, many_students, one_student, StudentSchema, student_without_id
-import re
 
 students_bp = Blueprint('students', __name__)
 
@@ -56,7 +55,7 @@ def create_student():
             # return {"error": err._message.orig.diag.message_detail}, 400
             db.session.rollback()  # Rollback the transaction to prevent corruption
             error_message = str(err.orig)  # Extract the original error message
-            return {f"Error": f"{error_message}"}
+            return {"error": f"{error_message}"}
     
 # Update - PUT /students/<int:id>
 @students_bp.route('/students/<int:student_id>', methods=['PUT', 'PATCH'])

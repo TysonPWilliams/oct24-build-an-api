@@ -18,3 +18,4 @@ class CourseSchema(ma.Schema):
 
 one_course = CourseSchema()
 many_courses = CourseSchema(many=True)
+course_without_id = CourseSchema(exclude=['id'])

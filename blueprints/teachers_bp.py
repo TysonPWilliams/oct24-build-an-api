@@ -56,7 +56,7 @@ def create_teacher():
             # return {"error": err._message.orig.diag.message_detail}, 400
             db.session.rollback()  # Rollback the transaction to prevent corruption
             error_message = str(err.orig)  # Extract the original error message
-            return {f"Error": f"{error_message}"}
+            return {"Error": f"{error_message}"}
     
 # Update - PUT /teachers/<int:id>
 @teachers_bp.route('/teachers/<int:teacher_id>', methods=['PUT', 'PATCH'])
