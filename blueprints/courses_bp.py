@@ -1,6 +1,4 @@
 from flask import Blueprint, request
-from sqlalchemy.exc import IntegrityError
-from psycopg2 import errorcodes
 from init import db
 from models.course import Course, many_courses, one_course, course_without_id
 
@@ -9,7 +7,7 @@ courses_bp = Blueprint('courses', __name__)
 # Read all - GET /courses
 @courses_bp.route('/courses')
 def get_all_courses():
-    stmt = db.select(Course)
+    stmt = db.select(Course).order_by(Course.name)
     courses = db.session.scalars(stmt)
     return many_courses.dump(courses)
 
@@ -33,7 +31,8 @@ def create_course():
         # Create a new instance
         new_course = Course(
             name = data.get('name'),
-            duration = data.get('duration'),
+            start_date = data.get('start_date'),
+            end_date = data.get('end_date'),
             teacher_id = data.get('teacher_id')
         )
 
@@ -41,15 +40,8 @@ def create_course():
         db.session.commit()
         return one_course.dump(new_course), 201
     
-    except IntegrityError as err:
-        if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION:
-            return {"error": "Email address already in use"}, 409
-        
-        else:
-            # return {"error": err._message.orig.diag.message_detail}, 400
-            db.session.rollback()  # Rollback the transaction to prevent corruption
-            error_message = str(err.orig)  # Extract the original error message
-            return {f"Error": f"{error_message}"}
+    except Exception as err:
+        return {f"Error": str(err.orig)}, 400
 
 # Delete one - DELETE /courses/<int:id>
 @courses_bp.route('/courses/<int:course_id>', methods=['DELETE'])
@@ -75,7 +67,8 @@ def update_course(course_id):
             data = course_without_id.load(request.json)
 
             course.name = data.get('name') or course.name
-            course.duration = data.get('duration') or course.duration
+            course.start_date = data.get('start_date') or course.start_date
+            course.end_date = data.get('end_date') or course.end_date
             course.teacher_id = data.get('teacher_id') or course.teacher_id
 
             db.session.commit()
@@ -83,7 +76,6 @@ def update_course(course_id):
         
         else:
             return {"error", f"Course with id {course_id} not found"}, 404
-    except IntegrityError as err:
+    except Exception as err:
         db.session.rollback()
-        error_message = str(err.orig)
-        return {"error": f"{error_message}"}
+        return {"error": str(err.orig)}

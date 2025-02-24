@@ -1,6 +1,5 @@
 from init import db, ma
 from marshmallow import Schema, fields
-from sqlalchemy import Date
 from models.student import Student
 
 
@@ -11,7 +10,7 @@ class Enrolment(db.Model):
 
     student_id = db.Column(db.Integer, db.ForeignKey("students.id", ondelete='cascade'), nullable=False)
     course_id = db.Column(db.Integer, db.ForeignKey("courses.id", ondelete='cascade'), nullable=False)
-    date_enrolment = db.Column(Date)
+    date_enrolment = db.Column(db.Date)
 
     student = db.relationship('Student', back_populates='enrolments')
     course = db.relationship('Course', back_populates='enrolments')
