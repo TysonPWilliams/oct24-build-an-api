@@ -1,4 +1,6 @@
 from init import db, ma
+from marshmallow.fields import String, Email
+from marshmallow.validate import Email
 
 class Student(db.Model):
     __tablename__ = 'students'
@@ -12,6 +14,9 @@ class Student(db.Model):
     enrolments = db.relationship('Enrolment', back_populates='student')
 
 class StudentSchema(ma.Schema):
+
+    email = Email(required=True, validate=Email(), error='Your email address is not of the correct format')
+
     class Meta:
         fields = ('id', 'name', 'email', 'address')
 

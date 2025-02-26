@@ -41,7 +41,7 @@ def create_course():
         return one_course.dump(new_course), 201
     
     except Exception as err:
-        return {f"Error": str(err.orig)}, 400
+        return {f"Error": str(err)}, 400
 
 # Delete one - DELETE /courses/<int:id>
 @courses_bp.route('/courses/<int:course_id>', methods=['DELETE'])
@@ -78,4 +78,4 @@ def update_course(course_id):
             return {"error", f"Course with id {course_id} not found"}, 404
     except Exception as err:
         db.session.rollback()
-        return {"error": str(err.orig)}
+        return {"error": str(err)}
