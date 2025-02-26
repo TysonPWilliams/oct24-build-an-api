@@ -1,5 +1,5 @@
 from init import db, ma
-from marshmallow import Schema, fields
+from marshmallow_sqlalchemy import fields
 from models.student import Student
 
 
@@ -19,8 +19,11 @@ Student.enrolments = db.relationship('Enrolment', back_populates='student')
 
 
 class EnrolmentSchema(ma.Schema):
+    student = fields.Nested('StudentSchema', exclude=['id'])
+    course = fields.Nested('CourseSchema', exclude=['id'])
+
     class Meta:
-        fields = ('id', 'student_id', 'course_id', 'date_enrolment')
+        fields = ('id', 'student_id', 'course_id', 'date_enrolment', 'student', 'course')
 
 one_enrolment = EnrolmentSchema()
 many_enrolments = EnrolmentSchema(many=True)

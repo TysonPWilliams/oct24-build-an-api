@@ -11,7 +11,7 @@ class Course(db.Model):
     end_date = db.Column(db.Date)
 
     teacher_id = db.Column(db.Integer, db.ForeignKey("teachers.id", ondelete='cascade'))
-    teacher = db.relationship('Teacher')
+    teacher = db.relationship('Teacher', back_populates='courses')
 
     enrolments = db.relationship('Enrolment', back_populates='course')
 
@@ -23,5 +23,5 @@ class CourseSchema(ma.Schema):
 
 
 one_course = CourseSchema()
-many_courses = CourseSchema(many=True)
+many_courses = CourseSchema(many=True, exclude=['teacher'])
 course_without_id = CourseSchema(exclude=['id'])
