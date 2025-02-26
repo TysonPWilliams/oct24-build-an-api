@@ -1,5 +1,6 @@
 from flask import Blueprint
 from init import db
+from datetime import date
 from models.student import Student
 from models.teacher import Teacher
 from models.course import Course
@@ -34,12 +35,12 @@ def seed_tables():
     students = [
         Student(
             name ='Mary Jones',
-            email='mary.jones@gmail.com',
+            email = 'm.j@gmail.com',
             address='Sydney'
         ),
         Student(
             name='John Smith',
-            email='john.smith@gmail.com'
+            email = "j.s@gmail.com"
         )
     ]
 
@@ -49,13 +50,15 @@ def seed_tables():
     courses = [
         Course(
             name = "Diploma of Web Development",
-            duration = "12 Months",
-            teacher_id = 1
+            start_date = date(2025, 10, 1),
+            end_date = date(2026, 4, 20),
+            teacher = teachers[1]
         ),
         Course(
-            name = "Bachelor of Arts",
-            duration = "36 Months",
-            teacher_id = 2
+            name = "Diploma of Cybersecurity",
+            start_date = date(2026, 1, 14),
+            end_date = date(2026, 7, 10),
+            teacher = teachers[0]
         )
         
     ]
