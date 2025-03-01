@@ -1,5 +1,6 @@
 from flask import Flask
 from init import db, ma
+from dotenv import load_dotenv
 import os
 from blueprints.db_bp import db_bp
 from blueprints.students_bp import students_bp
@@ -10,6 +11,8 @@ from marshmallow.exceptions import ValidationError
 
 def create_app():
     app = Flask(__name__)
+
+    load_dotenv(override=True)
 
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DB_URI')
 

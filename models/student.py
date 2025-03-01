@@ -15,7 +15,7 @@ class Student(db.Model):
 
 class StudentSchema(ma.Schema):
 
-    email = Email(required=True, validate=Email(), error='Your email address is not of the correct format')
+    # email = Email(required=True, validate=Email(), error='Your email address is not of the correct format')
 
     class Meta:
         fields = ('id', 'name', 'email', 'address')
