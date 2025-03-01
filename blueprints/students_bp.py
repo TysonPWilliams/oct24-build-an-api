@@ -79,9 +79,9 @@ def update_student(student_id):
             return one_student.dump(student), 200
         else:
             return {"error": f"Student with id {student_id} not found"}, 404  
-    except IntegrityError as err:
-        if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION:
-            return {"error": "Email address already in use"}, 409 # Conflict
+    except Exception as err:
+        db.session.rollback()
+        return {"error": str(err)}
 
 # Delete - DELETE /students/<int:id>
 @students_bp.route('/students/<int:student_id>', methods=['DELETE'])
